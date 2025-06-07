@@ -1,4 +1,4 @@
-# Captcha Solver with Docker + Selenium Grid
+# 验证码自动识别解决方案
 
 基于Docker和Selenium Grid的验证码自动识别解决方案。
 
@@ -14,11 +14,12 @@
 
 - Python 3.9+
 - Docker & Docker Compose
-- Chrome浏览器（本地开发时）
+- Chrome浏览器
+- ChromeDriver
 
-## 安装方式
+## 安装配置
 
-### 方式1：使用Conda（推荐）
+### 1. 创建Conda环境（推荐）
 
 ```bash
 # 克隆项目
@@ -35,10 +36,3 @@ conda activate captcha-solver
 python --version
 pip list
 ```
-
-## 快速开始
-
-1. 克隆项目
-```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name

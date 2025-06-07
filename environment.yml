@@ -5,14 +5,30 @@ channels:
 dependencies:
   - python=3.9
   - pip
-  - selenium=4.15.0
-  - requests=2.31.0
+  - selenium=4.33.0
+  - requests=2.32.3
   - pillow=10.0.1
   - numpy=1.24.3
   - pyyaml=6.0.1
+  - beautifulsoup4=4.13.4
+  - lxml=5.4.0
+  - cryptography=43.0.3
   - pip:
-    - webdriver-manager==4.0.1
+    - webdriver-manager==4.0.2
+    - volcengine-python-sdk==3.0.8
     - loguru==0.7.2
+    - python-dotenv==1.1.0
+    - pydantic==2.11.5
+    - pyppeteer==2.0.0
+    - requests-html==0.10.0
+    - pyquery==2.0.1
+    - fake-useragent==2.2.0
+    - httpx==0.28.1
+    - trio==0.30.0
+    - trio-websocket==0.12.2
+    - websockets==10.4
+    - tqdm==4.67.1
+    - ipython==8.18.1
     - pytest==7.4.0
     - pytest-cov==4.1.0
     - black==23.7.0
