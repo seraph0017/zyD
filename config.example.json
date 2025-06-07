@@ -1,0 +1,28 @@
+{
+  "browser": {
+    "headless": true,
+    "window_width": 1920,
+    "window_height": 1080,
+    "user_agent": ""
+  },
+  "ai": {
+    "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    "api_key": "YOUR_API_KEY_HERE"
+  },
+  "web": {
+    "base_url": "YOUR_TARGET_URL_HERE",
+    "code_id_str": "code",
+    "success_page_indicator": "success"
+  },
+  "retry": {
+    "max_attempts": 5,
+    "wait_time": 3
+  },
+  "log": {
+    "level": "INFO",
+    "file_path": "logs/app.log"
+  },
+  "file": {
+    "screenshot_dir": "testpng"
+  }
+}
