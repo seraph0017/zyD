@@ -10,6 +10,32 @@
 - 📊 实时监控和日志
 - ⚙️ 灵活的配置管理
 
+## 环境要求
+
+- Python 3.9+
+- Docker & Docker Compose
+- Chrome浏览器（本地开发时）
+
+## 安装方式
+
+### 方式1：使用Conda（推荐）
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/captcha-solver.git
+cd captcha-solver
+
+# 创建conda环境
+conda env create -f environment.yml
+
+# 激活环境
+conda activate captcha-solver
+
+# 验证安装
+python --version
+pip list
+```
+
 ## 快速开始
 
 1. 克隆项目
