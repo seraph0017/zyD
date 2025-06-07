@@ -221,7 +221,7 @@ logs/
 
 # 配置文件中的敏感信息
 # 注意：你可能需要创建 config.example.json 作为模板
-# config.json
+config.json
 
 # 临时文件
 *.tmp
