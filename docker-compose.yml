@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   selenium-hub:
     image: seleniarm/hub:latest
@@ -28,12 +26,12 @@ services:
   task-scheduler:
     build:
       context: .
-      dockerfile: Dockerfile.app
+      dockerfile: docker/Dockerfile.app  # 修改这里
     container_name: task-scheduler
     ports:
       - "8000:8000"
     volumes:
-      - ./screenshots:/app/screenshots
+      - ./data/screenshots:/app/data/screenshots  # 更新路径
       - ./logs:/app/logs
       - ./config:/app/config
     environment:
@@ -45,10 +43,10 @@ services:
   captcha-solver:
     build:
       context: .
-      dockerfile: Dockerfile.app
+      dockerfile: docker/Dockerfile.app  # 修改这里
     container_name: captcha-solver
     volumes:
-      - ./screenshots:/app/screenshots
+      - ./data/screenshots:/app/data/screenshots  # 更新路径
       - ./logs:/app/logs
       - ./config:/app/config
     environment:

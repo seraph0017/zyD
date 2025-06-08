@@ -1,3 +1,4 @@
+# 使用官方 Docker Hub 镜像
 FROM python:3.9-slim
 
 # 设置工作目录
