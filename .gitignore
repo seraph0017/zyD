@@ -178,15 +178,40 @@ config/*.json
 credentials/
 secrets/
 
-# 截图和测试文件
-screenshots/*.png
-screenshots/*.jpg
-screenshots/*.jpeg
-screenshots/*.gif
-!screenshots/.gitkeep
+# 截图和测试文件 (更新路径)
+data/screenshots/*.png
+data/screenshots/*.jpg
+data/screenshots/*.jpeg
+data/screenshots/*.gif
+!data/screenshots/.gitkeep
 testpng/*.png
 testpng/*.jpg
 !testpng/.gitkeep
+
+# 数据目录下的其他文件
+data/temp/
+data/cache/
+data/logs/
+data/*.db
+data/*.sqlite
+data/*.json
+!data/.gitkeep
+
+# 配置文件 (保护敏感信息)
+config/config.json
+!config/.gitkeep
+!config/config.example.json
+.env.local
+.env.production
+.env.development
+
+# API密钥和凭证
+*.key
+*.pem
+*.p12
+*.pfx
+credentials/
+secrets/
 
 # 日志文件
 logs/
@@ -324,3 +349,37 @@ debug_*
 
 # 项目特定的忽略
 # 如果有特定的配置或数据文件需要忽略，在这里添加config.json
+
+# Add these lines to the existing .gitignore
+
+# Redis dump files
+dump.rdb
+appendonly.aof
+
+# Selenium Grid logs
+selenium-server-*.log
+grid.log
+
+# Conda environment files
+.conda/
+conda-meta/
+
+# Fire engine AI specific
+volcengine_cache/
+*.volcengine
+
+# Browser automation
+browser_profiles/
+user_data_dir/
+
+# Task queue data
+task_data/
+queue_backup/
+
+# Performance monitoring
+performance_logs/
+metrics/
+
+# Local configuration overrides
+config.local.json
+settings.local.json
