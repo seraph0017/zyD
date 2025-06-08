@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # Selenium Grid Hub
+  selenium-hub:
+    image: selenium/hub:4.15.0
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    environment:
+      - GRID_MAX_SESSION=16
+      - GRID_BROWSER_TIMEOUT=300
+      - GRID_TIMEOUT=300
+    networks:
+      - selenium-grid
+
+  # Chrome Node 1
+  chrome-node-1:
+    image: selenium/node-chrome:4.15.0
+    container_name: chrome-node-1
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+
+  # Chrome Node 2
+  chrome-node-2:
+    image: selenium/node-chrome:4.15.0
+    container_name: chrome-node-2
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+      - NODE_MAX_INSTANCES=2
+      - NODE_MAX_SESSION=2
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+
+  # 你的应用程序
+  captcha-solver:
+    build: .
+    container_name: captcha-solver
+    depends_on:
+      - selenium-hub
+      - chrome-node-1
+      - chrome-node-2
+    environment:
+      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+      - VOLCENGINE_API_KEY=${VOLCENGINE_API_KEY}
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./screenshots:/app/screenshots
+    networks:
+      - selenium-grid
+    restart: unless-stopped
+
+  # Redis (用于任务队列)
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - selenium-grid
+
+  # 任务调度器
+  task-scheduler:
+    build: .
+    container_name: task-scheduler
+    command: python scheduler.py
+    depends_on:
+      - redis
+      - selenium-hub
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+    volumes:
+      - ./config:/app/config
+    networks:
+      - selenium-grid
+
+networks:
+  selenium-grid:
+    driver: bridge
+
+volumes:
+  screenshots:
+  logs:

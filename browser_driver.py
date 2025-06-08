@@ -16,7 +16,7 @@ import os
 config = get_config()
 
 class BrowserDriver:
-    def __init__(self, headless=None):
+    def __init__(self, headless=None, remote_url=None):
         try:
             # 使用配置文件中的设置，如果没有传入参数
             if headless is None:
@@ -27,6 +27,14 @@ class BrowserDriver:
             
             if headless:
                 chrome_options.add_argument('--headless')
+            
+            # Docker环境下的必要选项
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--disable-web-security')
+            chrome_options.add_argument('--disable-features=VizDisplayCompositor')
+            chrome_options.add_argument('--remote-debugging-port=9222')
             
             # 添加配置文件中的选项
             for option in config.browser.chrome_options:
@@ -44,17 +52,37 @@ class BrowserDriver:
             if config.browser.disable_css:
                 chrome_options.add_argument('--disable-css')
             
-            # 初始化 Chrome 驱动
-            self.driver = webdriver.Chrome(options=chrome_options)
+            # 检查是否使用远程WebDriver
+            remote_url = remote_url or os.getenv('SELENIUM_HUB_URL')
+            
+            if remote_url:
+                # 使用远程WebDriver连接到Selenium Grid (Selenium 4 语法)
+                print(f"连接到远程Selenium Hub: {remote_url}")
+                self.driver = webdriver.Remote(
+                    command_executor=remote_url,
+                    options=chrome_options
+                )
+            else:
+                # 本地WebDriver - 使用webdriver-manager自动管理ChromeDriver
+                try:
+                    from webdriver_manager.chrome import ChromeDriverManager
+                    service = Service(ChromeDriverManager().install())
+                    self.driver = webdriver.Chrome(service=service, options=chrome_options)
+                except ImportError:
+                    print("webdriver-manager未安装，尝试使用系统ChromeDriver")
+                    self.driver = webdriver.Chrome(options=chrome_options)
+            
             self.driver.implicitly_wait(config.browser.implicit_wait)
             self.driver.set_page_load_timeout(config.browser.page_load_timeout)
             
-            print(f"Chrome 浏览器已启动 ({'无头模式' if headless else '有界面模式'})")
+            print("✅ 浏览器驱动初始化成功")
             
         except Exception as e:
-            print(f"浏览器初始化失败: {e}")
-            print("请确保已安装 ChromeDriver 并添加到 PATH 环境变量中")
-            raise
+            print(f"❌ 浏览器初始化失败: {e}")
+            if "ChromeDriver" in str(e) or "chromedriver" in str(e):
+                print("请确保已安装 ChromeDriver 并添加到 PATH 环境变量中")
+                print("或者安装 webdriver-manager: pip install webdriver-manager")
+            raise e
 
     def get_page(self, url):
         try:

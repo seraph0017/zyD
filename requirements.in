@@ -1,0 +1,6 @@
+selenium==4.33.0
+volcengine-python-sdk==3.0.8
+requests==2.32.3
+httpx==0.28.1
+pydantic==2.11.5 
+webdriver-manager==4.0.2

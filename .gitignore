@@ -158,119 +158,169 @@ cython_debug/
 #  project, it is recommended to ignore the entire .idea directory.
 .idea/
 
-# VS Code
-.vscode/
-*.code-workspace
+# ==========================================
+# 项目特定的忽略规则
+# ==========================================
 
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
+# 配置文件 (保护敏感信息)
+config.json
+config/*.json
+!config.example.json
+.env.local
+.env.production
+.env.development
 
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
-[Dd]esktop.ini
-$RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-*.lnk
+# API密钥和凭证
+*.key
+*.pem
+*.p12
+*.pfx
+credentials/
+secrets/
 
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-.nfs*
-
-# Docker
-.dockerignore
-docker-compose.override.yml
-.docker/
-
-# Selenium
-# 保留一些示例截图，但忽略大量的测试截图
-testpng/screenshot_*.png
-# 保留重要的测试图片
-!testpng/full_page.png
-!testpng/sample_*.png
+# 截图和测试文件
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.jpeg
+screenshots/*.gif
+!screenshots/.gitkeep
+testpng/*.png
+testpng/*.jpg
+!testpng/.gitkeep
 
 # 日志文件
 logs/
 *.log
-
-# 配置文件中的敏感信息
-# 注意：你可能需要创建 config.example.json 作为模板
-config.json
+*.log.*
+log/
 
 # 临时文件
+temp/
+tmp/
 *.tmp
 *.temp
-*.swp
-*.swo
-*~
 
-# 备份文件
-*.bak
-*.backup
-*.old
+# Chrome相关文件
+chromedriver
+chromedriver.exe
+chrome_temp/
+chrome_profile/
+
+# WebDriver缓存
+.wdm/
+webdriver_cache/
+
+# Selenium相关
+selenium-debug.log
+geckodriver.log
+
+# AI模型缓存
+model_cache/
+*.model
+*.pkl
+*.joblib
+
+# Docker相关
+.dockerignore
+docker-compose.override.yml
+docker-compose.local.yml
 
 # 数据库文件
 *.db
 *.sqlite
 *.sqlite3
 
-# 证书和密钥文件
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
+# 备份文件
+*.bak
+*.backup
+*.old
 
-# 环境变量文件
-.env.local
-.env.development
-.env.test
-.env.production
+# 操作系统相关
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
 
-# Chrome/Selenium 相关
-chromedriver
-chromedriver.exe
-geckodriver
-geckodriver.exe
-*.crx
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# AI模型文件（如果有本地模型）
-*.model
-*.pkl
-*.joblib
+# Linux
+*~
+.nfs*
 
-# 性能分析文件
+# IDE相关
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# 性能和调试文件
+profile_output.*
 *.prof
 *.pstats
 
+# 缓存目录
+cache/
+.cache/
+__pycache__/
+
+# 编译文件
+*.pyc
+*.pyo
+*.pyd
+
+# 测试覆盖率
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 文档生成
+docs/_build/
+docs/build/
+
+# 包管理
+requirements-dev.txt
+requirements-test.txt
+
+# 本地开发文件
+local_*
+dev_*
+test_local*
+debug_*
+
+# 大文件和媒体文件
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+
+# 压缩文件
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.tar.bz2
+
 # 项目特定的忽略
-# 如果你有特定的输出目录
-output/
-results/
-reports/
+# 如果有特定的配置或数据文件需要忽略，在这里添加
