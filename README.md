@@ -1,82 +1,73 @@
-<div align="center">
+<div align="center">
 
-# 🤖 智能验证码自动识别系统 (zyD)
+# 🤖 智能验证码自动识别系统 (zyD)
 
 *基于火山引擎AI和Selenium的智能验证码自动识别解决方案*
 
-[![Python](https://img.shields.io/badge/Python-3.9
-+-blue.svg)](https://python.org)
-[![Docker](https://img.shields.io/badge/Docker-20.
-10+-blue.svg)](https://docker.com)
-[![License](https://img.shields.io/badge/
-License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/
-Status-Active-brightgreen.svg)](#)
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
+[![Docker](https://img.shields.io/badge/Docker-20.10+-blue.svg)](https://docker.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](#)
 
-[功能特性](#-功能特性) • [快速开始](#-快速开始) • [API文
-档](#-api接口) • [配置说明](#️-配置说明) • [故障排除]
-(#-故障排除)
+[功能特性](#-功能特性) • [快速开始](#-快速开始) • [API文档](#-api接口) • [配置说明](#️-配置说明) • [故障排除](#-故障排除)
 
 </div>
 
 ---
 
-## 📖 项目简介
+## 📖 项目简介
 
-**zyD** 是一个现代化的智能验证码识别系统，采用先进的AI技术
-和分布式架构设计。系统集成了火山引擎豆包大模型的视觉识别能
-力，结合Selenium Grid的分布式浏览器自动化，为验证码识别提
-供高效、稳定的解决方案。
+**zyD** 是一个现代化的智能验证码识别系统，采用先进的AI技术和分布式架构设计。系统集成了火山引擎豆包大模型的视觉识别能力，结合Selenium Grid的分布式浏览器自动化，为验证码识别提供高效、稳定的解决方案。
 
-### 🎯 核心优势
+### 🎯 核心优势
 
-- **🧠 AI驱动** - 基于火山引擎豆包大模型的先进视觉识别技术
-- **⚡ 高性能** - 分布式架构支持高并发处理
-- **🔧 易部署** - Docker容器化，一键启动
-- **📊 可监控** - 完整的日志记录和实时状态跟踪
+- **🧠 AI驱动** - 基于火山引擎豆包大模型的先进视觉识别技术
+- **⚡ 高性能** - 分布式架构支持高并发处理
+- **🔧 易部署** - Docker容器化，一键启动
+- **📊 可监控** - 完整的日志记录和实时状态跟踪
 
 ---
 
-## 🌟 功能特性
+## 🌟 功能特性
 
 <table>
 <tr>
-<td width="50%">
+<td width="50%">
 
-### 🤖 智能识别
-- **AI驱动识别** - 集成火山引擎豆包大模型
-- **多模态支持** - 文本和视觉模型组合
-- **智能重试** - 指数退避重试机制
-- **自适应优化** - 动态调整识别策略
+### 🤖 智能识别
+- **AI驱动识别** - 集成火山引擎豆包大模型
+- **多模态支持** - 文本和视觉模型组合
+- **智能重试** - 指数退避重试机制
+- **自适应优化** - 动态调整识别策略
 
 </td>
-<td width="50%">
+<td width="50%">
 
-### 🚀 分布式架构
-- **Docker容器化** - 环境隔离，易于部署
-- **Selenium Grid** - 多节点并发处理
-- **Redis队列** - 异步任务调度管理
-- **RESTful API** - 标准HTTP接口
+### 🚀 分布式架构
+- **Docker容器化** - 环境隔离，易于部署
+- **Selenium Grid** - 多节点并发处理
+- **Redis队列** - 异步任务调度管理
+- **RESTful API** - 标准HTTP接口
 
 </td>
 </tr>
 <tr>
-<td width="50%">
+<td width="50%">
 
-### 📊 监控运维
-- **实时监控** - 任务状态实时跟踪
-- **完整日志** - 详细的操作记录
-- **健康检查** - 系统状态自动检测
-- **性能指标** - 关键指标监控
+### 📊 监控运维
+- **实时监控** - 任务状态实时跟踪
+- **完整日志** - 详细的操作记录
+- **健康检查** - 系统状态自动检测
+- **性能指标** - 关键指标监控
 
 </td>
-<td width="50%">
+<td width="50%">
 
-### ⚙️ 灵活配置
-- **JSON配置** - 结构化配置管理
-- **环境变量** - 支持容器化部署
-- **热更新** - 无需重启的配置更新
-- **多环境** - 开发/测试/生产环境支持
+### ⚙️ 灵活配置
+- **JSON配置** - 结构化配置管理
+- **环境变量** - 支持容器化部署
+- **热更新** - 无需重启的配置更新
+- **多环境** - 开发/测试/生产环境支持
 
 </td>
 </tr>
@@ -84,44 +75,44 @@ Status-Active-brightgreen.svg)](#)
 
 ---
 
-## 🏗️ 系统架构
+## 🏗️ 系统架构
 
 ```mermaid
-graph TB
-    subgraph "客户端层"
-        A[Web客户端] --> B[REST API]
-        C[命令行工具] --> B
-    end
-    
-    subgraph "服务层"
-        B --> D[API Server<br/>Flask]
-        D --> E[Task Scheduler<br/>Python]
-    end
-    
-    subgraph "消息队列"
-        E --> F[Redis Queue<br/>任务队列]
-        F --> G[Task Results<br/>结果存储]
-    end
-    
-    subgraph "执行层"
-        E --> H[Selenium Hub<br/>调度中心]
-        H --> I[Chrome Node 1<br/>浏览器实例]
-        H --> J[Chrome Node 2<br/>浏览器实例]
-        H --> K[Chrome Node N<br/>浏览器实例]
-    end
-    
-    subgraph "AI服务"
-        I --> L[VolcEngine AI<br/>视觉识别]
-        J --> L
-        K --> L
-    end
-    
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style D fill:#f3e5f5
-    style E fill:#e8f5e8
-    style F fill:#fff3e0
-    style L fill:#fce4ec
+graph TB
+    subgraph "客户端层"
+        A[Web客户端] --> B[REST API]
+        C[命令行工具] --> B
+    end
+    
+    subgraph "服务层"
+        B --> D[API Server<br/>Flask]
+        D --> E[Task Scheduler<br/>Python]
+    end
+    
+    subgraph "消息队列"
+        E --> F[Redis Queue<br/>任务队列]
+        F --> G[Task Results<br/>结果存储]
+    end
+    
+    subgraph "执行层"
+        E --> H[Selenium Hub<br/>调度中心]
+        H --> I[Chrome Node 1<br/>浏览器实例]
+        H --> J[Chrome Node 2<br/>浏览器实例]
+        H --> K[Chrome Node N<br/>浏览器实例]
+    end
+    
+    subgraph "AI服务"
+        I --> L[VolcEngine AI<br/>视觉识别]
+        J --> L
+        K --> L
+    end
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style D fill:#f3e5f5
+    style E fill:#e8f5e8
+    style F fill:#fff3e0
+    style L fill:#fce4ec
 ```
 ## 📋 环境要求
 组件 版本要求 说明 Python 3.9+ 主要运行环境 Docker 20.10+ 容器化部署 Docker Compose 2.0+ 服务编排 内存 4GB+ 建议配置 磁盘 2GB+ 可用空间 火山引擎API 有效密钥 AI服务访问
