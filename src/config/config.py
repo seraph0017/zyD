@@ -121,7 +121,7 @@ class LogConfig:
 @dataclass
 class FileConfig:
     """文件配置"""
-    screenshot_dir: str = "testpng"
+    screenshot_dir: str = "data/screenshots"
     screenshot_prefix: str = "screenshot"
     screenshot_format: str = "png"
     auto_cleanup: bool = False
