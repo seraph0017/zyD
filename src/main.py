@@ -1,108 +1,103 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from browser_driver import BrowserDriver
-from volcengine_ai import VolcEngineAI
-from config import get_config
+from src.core.browser_driver import BrowserDriver
+from src.ai.volcengine_ai import VolcEngineAI
+from src.config.config import get_config
+from src.utils.logger import setup_logger
 import os
 import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-import logging
-
-# 获取配置
-config = get_config()
-
-# 配置日志
-logging.basicConfig(
-    level=getattr(logging, config.log.level),
-    format=config.log.format
-)
-logger = logging.getLogger(__name__)
-
-def validate_code(code):
-    """验证识别出的验证码是否有效"""
-    if not code:
-        return False
-    # 可以添加更多验证逻辑，例如长度检查、格式检查等
-    return True
-
-def check_success_page(driver):
-    """检查是否成功跳转到目标页面"""
-    try:
-        # 检查是否出现成功页面的标志元素
-        WebDriverWait(driver.driver, config.web.success_check_timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, config.web.success_page_selector))
-        )
-        
-        # 检查页面URL是否发生变化
-        current_url = driver.driver.current_url
-        for keyword in config.web.success_url_keywords:
-            if keyword in current_url.lower():
-                return True
-                
-        # 检查页面是否包含成功相关的文本
-        page_text = driver.driver.page_source
-        for keyword in config.web.success_keywords:
-            if keyword in page_text.lower():
-                return True
-                
-        return False
-    except (TimeoutException, NoSuchElementException):
-        return False
-
-def process_captcha_and_submit(driver, ai):
-    """处理验证码识别和提交的完整流程"""
-    try:
-        # 获取截图
-        logger.info("正在截取页面图片...")
-        screenshot_path = driver.get_screenshot()
-        logger.info(f"截图已保存至: {screenshot_path}")
-        
-        # 确认文件存在
-        if not os.path.exists(screenshot_path):
-            logger.error(f"错误：截图文件不存在: {screenshot_path}")
-            return False
-        
-        # 使用视觉模型分析图片
-        logger.info("正在分析图片...")
-        
-        # 使用vision_chat_completion方法处理图片
-        result = ai.vision_chat_completion(
-            text_prompt=config.ai.captcha_prompt,
-            image_path=screenshot_path,
-            image_format=config.file.screenshot_format,
-            model=config.ai.vision_model
-        )
-        
-        # 处理结果
-        if result and hasattr(result, 'choices') and len(result.choices) > 0:
-            code = result.choices[0].message.content.strip()
-            logger.info(f"识别到的验证码: {code}")
-            
-            # 验证识别结果
-            if not validate_code(code):
-                logger.warning("验证码识别结果可能不正确，但仍将尝试提交")
-            
-            # 输入验证码并提交
-            logger.info("正在输入验证码并提交...")
-            driver.enter_code_and_submit(code)
-            
-            # 等待页面响应
-            time.sleep(2)
-            
-            return True
-        else:
-            logger.error("未能获取有效的分析结果")
-            return False
-            
-    except Exception as e:
-        logger.exception(f"处理验证码过程中出现错误: {e}")
-        return False
 
 def main():
+    """主函数"""
+    # 获取配置
+    config = get_config()
+    logger = setup_logger(__name__)
+
+    def validate_code(code):
+        """验证识别出的验证码是否有效"""
+        if not code:
+            return False
+        # 可以添加更多验证逻辑，例如长度检查、格式检查等
+        return True
+
+    def check_success_page(driver):
+        """检查是否成功跳转到目标页面"""
+        try:
+            # 检查是否出现成功页面的标志元素
+            WebDriverWait(driver.driver, config.web.success_check_timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, config.web.success_page_selector))
+            )
+            
+            # 检查页面URL是否发生变化
+            current_url = driver.driver.current_url
+            for keyword in config.web.success_url_keywords:
+                if keyword in current_url.lower():
+                    return True
+                    
+            # 检查页面是否包含成功相关的文本
+            page_text = driver.driver.page_source
+            for keyword in config.web.success_keywords:
+                if keyword in page_text.lower():
+                    return True
+                    
+            return False
+        except (TimeoutException, NoSuchElementException):
+            return False
+
+    def process_captcha_and_submit(driver, ai):
+        """处理验证码识别和提交的完整流程"""
+        try:
+            # 获取截图
+            logger.info("正在截取页面图片...")
+            screenshot_path = driver.get_screenshot()
+            logger.info(f"截图已保存至: {screenshot_path}")
+            
+            # 确认文件存在
+            if not os.path.exists(screenshot_path):
+                logger.error(f"错误：截图文件不存在: {screenshot_path}")
+                return False
+            
+            # 使用视觉模型分析图片
+            logger.info("正在分析图片...")
+            
+            # 使用vision_chat_completion方法处理图片
+            result = ai.vision_chat_completion(
+                text_prompt=config.ai.captcha_prompt,
+                image_path=screenshot_path,
+                image_format=config.file.screenshot_format,
+                model=config.ai.vision_model
+            )
+            
+            # 处理结果
+            if result and hasattr(result, 'choices') and len(result.choices) > 0:
+                code = result.choices[0].message.content.strip()
+                logger.info(f"识别到的验证码: {code}")
+                
+                # 验证识别结果
+                if not validate_code(code):
+                    logger.warning("验证码识别结果可能不正确，但仍将尝试提交")
+                
+                # 输入验证码并提交
+                logger.info("正在输入验证码并提交...")
+                driver.enter_code_and_submit(code)
+                
+                # 等待页面响应
+                time.sleep(2)
+                
+                return True
+            else:
+                logger.error("未能获取有效的分析结果")
+                return False
+                
+        except Exception as e:
+            logger.exception(f"处理验证码过程中出现错误: {e}")
+            return False
+
     driver = None
     start_time = time.time()
     try:

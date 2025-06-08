@@ -6,9 +6,9 @@ import json
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from browser_driver import BrowserDriver
-from volcengine_ai import VolcEngineAI
-from config import get_config
+from src.core.browser_driver import BrowserDriver
+from src.ai.volcengine_ai import VolcEngineAI
+from src.config.config import get_config
 import logging
 import os
 

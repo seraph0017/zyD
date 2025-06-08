@@ -6,8 +6,15 @@
 """
 
 import os
+import json
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from pathlib import Path
+
+# 项目根目录
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+CONFIG_DIR = PROJECT_ROOT / "config"
+DATA_DIR = PROJECT_ROOT / "data"
 
 
 @dataclass
@@ -137,6 +144,21 @@ class Config:
         if config_file and os.path.exists(config_file):
             self.load_from_file(config_file)
     
+    @classmethod
+    def from_dict(cls, config_data: Dict[str, Any]) -> 'Config':
+        """从字典创建配置实例"""
+        config = cls()
+        
+        # 更新配置
+        for section, values in config_data.items():
+            if hasattr(config, section):
+                config_obj = getattr(config, section)
+                for key, value in values.items():
+                    if hasattr(config_obj, key):
+                        setattr(config_obj, key, value)
+        
+        return config
+    
     def load_from_file(self, config_file: str):
         """从配置文件加载配置"""
         try:
@@ -209,7 +231,21 @@ config.apply_env_config()
 # 便捷访问函数
 def get_config() -> Config:
     """获取配置实例"""
-    return Config('config.json')
+    config_path = CONFIG_DIR / "config.json"
+    
+    if not os.path.exists(config_path):
+        # 如果配置文件不存在，使用示例配置
+        example_path = PROJECT_ROOT / "src" / "config" / "config.example.json"
+        if os.path.exists(example_path):
+            config_path = example_path
+        else:
+            raise FileNotFoundError(f"配置文件不存在: {config_path}")
+    
+    # 创建Config实例并加载配置文件
+    config = Config()
+    config.load_from_file(str(config_path))
+    
+    return config
 
 
 def load_config(config_file: str) -> Config:

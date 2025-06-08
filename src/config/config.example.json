@@ -1,0 +1,66 @@
+{
+  "browser": {
+    "headless": true,
+    "window_width": 1920,
+    "window_height": 1080,
+    "implicit_wait": 10,
+    "page_load_timeout": 30,
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "disable_images": false,
+    "disable_css": false,
+    "chrome_options": [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--disable-web-security",
+      "--disable-features=VizDisplayCompositor"
+    ]
+  },
+  "ai": {
+    "api_key": "YOUR_API_KEY_HERE",
+    "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+    "text_model": "doubao-1.5-pro-32k-250115",
+    "vision_model": "doubao-1.5-vision-lite-250315",
+    "captcha_prompt": "请解析图片中验证码，并仅返回验证码内容，请勿返回其他内容。",
+    "max_tokens": 1000,
+    "temperature": 0.1
+  },
+  "web": {
+    "base_url": "YOUR_TARGET_URL_HERE",
+    "code_input_id": "solution",
+    "submit_button_selector": ".botdetect-button.btn",
+    "success_page_selector": ".cart-button-wrapper",
+    "success_check_timeout": 10,
+    "success_url_keywords": ["success", "complete", "done"],
+    "success_keywords": ["成功", "完成", "success"]
+  },
+  "retry": {
+    "max_attempts": 5,
+    "wait_time": 3,
+    "exponential_backoff": true,
+    "backoff_multiplier": 1.5,
+    "max_wait_time": 30
+  },
+  "log": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(levelname)s - %(message)s",
+    "file_path": "logs/app.log",
+    "max_file_size": "10MB",
+    "backup_count": 5
+  },
+  "file": {
+    "screenshot_dir": "screenshots",
+    "screenshot_prefix": "screenshot",
+    "screenshot_format": "png",
+    "auto_cleanup": false,
+    "max_files": 100
+  },
+  "distributed": {
+    "redis_url": "redis://localhost:6379",
+    "selenium_hub_url": "http://localhost:4444/wd/hub",
+    "max_workers_per_node": 4,
+    "task_timeout": 300,
+    "health_check_interval": 30,
+    "max_retry_attempts": 3
+  }
+}
