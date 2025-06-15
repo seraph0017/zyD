@@ -115,7 +115,16 @@ graph TB
     style L fill:#fce4ec
 ```
 ## 📋 环境要求
-组件 版本要求 说明 Python 3.9+ 主要运行环境 Docker 20.10+ 容器化部署 Docker Compose 2.0+ 服务编排 内存 4GB+ 建议配置 磁盘 2GB+ 可用空间 火山引擎API 有效密钥 AI服务访问
+
+| 组件 | 版本要求 | 说明 |
+|------|----------|------|
+| Python | 3.9+ | 主要运行环境 |
+| Docker | 20.10+ | 容器化部署 |
+| Docker Compose | 2.0+ | 服务编排 |
+| 内存 | 4GB+ (单机) / 8GB+ (分布式) | 建议配置 |
+| CPU | 2核+ (单机) / 4核+ (分布式) | 建议配置 |
+| 磁盘 | 2GB+ | 可用空间 |
+| 火山引擎API | 有效密钥 | AI服务访问 |
 
 ## 🚀 快速开始
 ### 步骤 1: 获取项目
@@ -151,17 +160,44 @@ vim config/config.json
 }
 ```
 ### 步骤 3: 启动服务
-🐳 Docker部署（推荐）
+
+#### 🐳 单机部署（推荐用于开发和测试）
 ```
-# 启动所有服务
-docker-compose up -d
+# 启动所有服务
+docker-compose up -d
 
-# 查看服务状态
-docker-compose ps
+# 查看服务状态
+docker-compose ps
 
-# 实时查看日志
-docker-compose logs -f
-``` 💻 本地开发
+# 实时查看日志
+docker-compose logs -f
+```
+
+#### 🌐 分布式部署（推荐用于生产环境）
+```
+# 快速部署分布式系统 (默认2个工作节点)
+./scripts/deploy-distributed.sh deploy
+
+# 指定工作节点数量部署
+./scripts/deploy-distributed.sh deploy -n 4
+
+# 生产环境部署
+./scripts/deploy-distributed.sh deploy -e prod -n 6
+
+# 查看分布式系统状态
+./scripts/deploy-distributed.sh status
+
+# 扩缩容工作节点
+./scripts/deploy-distributed.sh scale worker-node 6
+
+# 健康检查
+./scripts/deploy-distributed.sh health
+
+# 查看监控面板
+./scripts/deploy-distributed.sh monitor
+```
+
+> 📖 **详细的分布式部署指南**: [DISTRIBUTED_DEPLOYMENT.md](docs/DISTRIBUTED_DEPLOYMENT.md) 💻 本地开发
 ```
 # 使用Conda环境（推荐）
 conda env create -f environment.yml
@@ -206,52 +242,90 @@ python -m src.api.server
 python -m src.core.scheduler
 ```
 ## 📡 API接口
-### 提交任务
+
+### 单机模式 API
+
+#### 提交任务
 POST /submit_task
 
 ```
-curl -X POST http://localhost:8000/submit_task \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://target-site.com/captcha",
-    "priority": "high",
-    "timeout": 30
-  }'
+curl -X POST http://localhost:8000/submit_task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://target-site.com/captcha",
+    "priority": "high",
+    "timeout": 30
+  }'
 ```
-响应示例：
 
-```
-{
-  "task_id": "task_123456789",
-  "status": "submitted",
-  "message": "Task submitted successfully"
-}
-```
-### 查询任务状态
+#### 查询任务状态
 GET /task_status/{task_id}
 
 ```
-curl http://localhost:8000/task_status/
-task_123456789
+curl http://localhost:8000/task_status/task_123456789
 ```
-响应示例：
+
+### 分布式模式 API
+
+#### 提交任务
+```
+# 通过API网关提交任务
+curl -X POST http://localhost:8080/submit_task \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://target-site.com/captcha",
+    "timeout": 60,
+    "retry_count": 3
+  }'
+```
+
+#### 查询任务状态
+```
+curl http://localhost:8080/task_status/<task_id>
+```
+
+#### 系统监控
+```
+# 查看系统统计
+curl http://localhost:8080/stats
+
+# 查看工作节点状态
+curl http://localhost:8080/workers
+```
+
+### 响应示例
 
 ```
 {
-  "task_id": "task_123456789",
-  "status": "completed",
-  "result": {
-    "success": true,
-    "captcha_code": "ABC123",
-    "processing_time": 5.2
-  }
+  "task_id": "task_123456789",
+  "status": "submitted",
+  "message": "Task submitted successfully"
 }
 ```
-### 健康检查
-GET /health
 
 ```
-curl http://localhost:8000/health
+{
+  "task_id": "task_123456789",
+  "status": "completed",
+  "result": {
+    "success": true,
+    "captcha_code": "ABC123",
+    "processing_time": 5.2
+  }
+}
+```
+
+### 监控端点
+
+```
+# 单机模式健康检查
+curl http://localhost:8000/health
+
+# 分布式模式
+curl http://localhost:8080/health      # API网关健康检查
+curl http://localhost:9090/health      # 监控服务健康检查
+curl http://localhost:9090             # 监控仪表板
+curl http://localhost:9090/metrics     # Prometheus指标
 ```
 ## ⚙️ 配置说明
 ### 📁 配置文件结构

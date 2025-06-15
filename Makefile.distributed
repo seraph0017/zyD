@@ -1,0 +1,268 @@
+# 分布式验证码系统 Makefile
+# 提供便捷的管理命令
+
+.PHONY: help deploy start stop restart status logs health monitor test clean scale
+
+# 默认配置
+NODES ?= 2
+ENV ?= dev
+MODE ?= single
+COMPOSE_FILE = docker/docker-compose.distributed.yml
+DEPLOY_SCRIPT = ./scripts/deploy-distributed.sh
+TEST_SCRIPT = ./scripts/test-distributed.sh
+
+# 颜色定义
+RED = \033[0;31m
+GREEN = \033[0;32m
+YELLOW = \033[1;33m
+BLUE = \033[0;34m
+NC = \033[0m
+
+# 帮助信息
+help: ## 显示帮助信息
+	@echo "$(BLUE)分布式验证码系统管理命令$(NC)"
+	@echo ""
+	@echo "$(YELLOW)部署命令:$(NC)"
+	@echo "  deploy          部署分布式系统 (默认2个工作节点)"
+	@echo "  deploy-multi    多机部署模式"
+	@echo "  deploy-prod     生产环境部署"
+	@echo ""
+	@echo "$(YELLOW)服务管理:$(NC)"
+	@echo "  start           启动所有服务"
+	@echo "  stop            停止所有服务"
+	@echo "  restart         重启所有服务"
+	@echo "  status          查看服务状态"
+	@echo "  logs            查看服务日志"
+	@echo "  health          健康检查"
+	@echo ""
+	@echo "$(YELLOW)扩缩容:$(NC)"
+	@echo "  scale-workers   扩缩容工作节点 (使用 NODES=N)"
+	@echo "  scale-chrome    扩缩容Chrome节点 (使用 NODES=N)"
+	@echo ""
+	@echo "$(YELLOW)监控测试:$(NC)"
+	@echo "  monitor         打开监控面板"
+	@echo "  test            运行功能测试"
+	@echo "  test-load       运行负载测试"
+	@echo "  test-all        运行所有测试"
+	@echo ""
+	@echo "$(YELLOW)维护:$(NC)"
+	@echo "  clean           清理系统资源"
+	@echo "  backup          备份系统数据"
+	@echo "  update          更新系统镜像"
+	@echo ""
+	@echo "$(YELLOW)参数:$(NC)"
+	@echo "  NODES=N         指定节点数量 (默认: 2)"
+	@echo "  ENV=env         指定环境 (dev|prod, 默认: dev)"
+	@echo "  MODE=mode       指定模式 (single|multi, 默认: single)"
+	@echo ""
+	@echo "$(YELLOW)示例:$(NC)"
+	@echo "  make deploy NODES=4              # 部署4个工作节点"
+	@echo "  make deploy-prod NODES=6         # 生产环境部署6个节点"
+	@echo "  make scale-workers NODES=8       # 扩容到8个工作节点"
+	@echo "  make test-load                   # 运行负载测试"
+
+# 部署命令
+deploy: ## 部署分布式系统
+	@echo "$(BLUE)部署分布式系统 ($(NODES)个工作节点)...$(NC)"
+	$(DEPLOY_SCRIPT) deploy -n $(NODES) -e $(ENV)
+	@echo "$(GREEN)部署完成!$(NC)"
+
+deploy-multi: ## 多机部署模式
+	@echo "$(BLUE)多机部署模式 ($(NODES)个工作节点)...$(NC)"
+	$(DEPLOY_SCRIPT) deploy -m multi -n $(NODES) -e $(ENV)
+	@echo "$(GREEN)多机部署完成!$(NC)"
+
+deploy-prod: ## 生产环境部署
+	@echo "$(BLUE)生产环境部署 ($(NODES)个工作节点)...$(NC)"
+	$(DEPLOY_SCRIPT) deploy -e prod -n $(NODES)
+	@echo "$(GREEN)生产环境部署完成!$(NC)"
+
+# 服务管理
+start: ## 启动所有服务
+	@echo "$(BLUE)启动所有服务...$(NC)"
+	$(DEPLOY_SCRIPT) start
+	@echo "$(GREEN)服务启动完成!$(NC)"
+
+stop: ## 停止所有服务
+	@echo "$(BLUE)停止所有服务...$(NC)"
+	$(DEPLOY_SCRIPT) stop
+	@echo "$(GREEN)服务停止完成!$(NC)"
+
+restart: ## 重启所有服务
+	@echo "$(BLUE)重启所有服务...$(NC)"
+	$(DEPLOY_SCRIPT) restart
+	@echo "$(GREEN)服务重启完成!$(NC)"
+
+status: ## 查看服务状态
+	@echo "$(BLUE)查看服务状态...$(NC)"
+	$(DEPLOY_SCRIPT) status
+
+logs: ## 查看服务日志
+	@echo "$(BLUE)查看服务日志...$(NC)"
+	$(DEPLOY_SCRIPT) logs
+
+logs-gateway: ## 查看API网关日志
+	@echo "$(BLUE)查看API网关日志...$(NC)"
+	$(DEPLOY_SCRIPT) logs api-gateway
+
+logs-scheduler: ## 查看任务调度器日志
+	@echo "$(BLUE)查看任务调度器日志...$(NC)"
+	$(DEPLOY_SCRIPT) logs task-scheduler
+
+logs-worker: ## 查看工作节点日志
+	@echo "$(BLUE)查看工作节点日志...$(NC)"
+	$(DEPLOY_SCRIPT) logs worker-node-1
+
+logs-monitoring: ## 查看监控服务日志
+	@echo "$(BLUE)查看监控服务日志...$(NC)"
+	$(DEPLOY_SCRIPT) logs monitoring
+
+health: ## 健康检查
+	@echo "$(BLUE)执行健康检查...$(NC)"
+	$(DEPLOY_SCRIPT) health
+
+# 扩缩容
+scale-workers: ## 扩缩容工作节点
+	@echo "$(BLUE)扩缩容工作节点到 $(NODES) 个...$(NC)"
+	$(DEPLOY_SCRIPT) scale worker-node $(NODES)
+	@echo "$(GREEN)工作节点扩缩容完成!$(NC)"
+
+scale-chrome: ## 扩缩容Chrome节点
+	@echo "$(BLUE)扩缩容Chrome节点到 $(NODES) 个...$(NC)"
+	$(DEPLOY_SCRIPT) scale chrome-node $(NODES)
+	@echo "$(GREEN)Chrome节点扩缩容完成!$(NC)"
+
+# 监控和测试
+monitor: ## 打开监控面板
+	@echo "$(BLUE)打开监控面板...$(NC)"
+	$(DEPLOY_SCRIPT) monitor
+
+test: ## 运行功能测试
+	@echo "$(BLUE)运行功能测试...$(NC)"
+	$(TEST_SCRIPT) api
+	@echo "$(GREEN)功能测试完成!$(NC)"
+
+test-health: ## 运行健康检查测试
+	@echo "$(BLUE)运行健康检查测试...$(NC)"
+	$(TEST_SCRIPT) health
+	@echo "$(GREEN)健康检查测试完成!$(NC)"
+
+test-load: ## 运行负载测试
+	@echo "$(BLUE)运行负载测试...$(NC)"
+	$(TEST_SCRIPT) load -c 20 -p 5
+	@echo "$(GREEN)负载测试完成!$(NC)"
+
+test-stress: ## 运行压力测试
+	@echo "$(BLUE)运行压力测试...$(NC)"
+	$(TEST_SCRIPT) stress
+	@echo "$(GREEN)压力测试完成!$(NC)"
+
+test-failover: ## 运行故障转移测试
+	@echo "$(BLUE)运行故障转移测试...$(NC)"
+	$(TEST_SCRIPT) failover
+	@echo "$(GREEN)故障转移测试完成!$(NC)"
+
+test-all: ## 运行所有测试
+	@echo "$(BLUE)运行所有测试...$(NC)"
+	$(TEST_SCRIPT) all
+	@echo "$(GREEN)所有测试完成!$(NC)"
+
+# 维护命令
+clean: ## 清理系统资源
+	@echo "$(YELLOW)警告: 这将删除所有容器、镜像和数据!$(NC)"
+	@read -p "确定要继续吗? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
+	@echo "$(BLUE)清理系统资源...$(NC)"
+	$(DEPLOY_SCRIPT) clean
+	@echo "$(GREEN)系统清理完成!$(NC)"
+
+backup: ## 备份系统数据
+	@echo "$(BLUE)备份系统数据...$(NC)"
+	@mkdir -p backup/$(shell date +%Y%m%d_%H%M%S)
+	@docker exec redis-master redis-cli BGSAVE
+	@sleep 5
+	@docker cp redis-master:/data/dump.rdb backup/$(shell date +%Y%m%d_%H%M%S)/
+	@cp config/distributed.json backup/$(shell date +%Y%m%d_%H%M%S)/ 2>/dev/null || true
+	@echo "$(GREEN)数据备份完成!$(NC)"
+
+update: ## 更新系统镜像
+	@echo "$(BLUE)更新系统镜像...$(NC)"
+	@docker-compose -f $(COMPOSE_FILE) pull
+	@docker-compose -f $(COMPOSE_FILE) build --pull
+	@echo "$(GREEN)镜像更新完成!$(NC)"
+
+# 开发命令
+dev-setup: ## 开发环境设置
+	@echo "$(BLUE)设置开发环境...$(NC)"
+	@cp config/distributed.example.json config/distributed.json 2>/dev/null || true
+	@echo "$(GREEN)开发环境设置完成!$(NC)"
+
+dev-logs: ## 开发模式查看日志
+	@docker-compose -f $(COMPOSE_FILE) logs -f
+
+dev-shell: ## 进入开发容器
+	@echo "$(BLUE)进入API网关容器...$(NC)"
+	@docker exec -it $$(docker-compose -f $(COMPOSE_FILE) ps -q api-gateway) /bin/bash
+
+# 快速命令别名
+up: deploy ## 别名: 部署系统
+down: stop ## 别名: 停止系统
+ps: status ## 别名: 查看状态
+tail: logs ## 别名: 查看日志
+check: health ## 别名: 健康检查
+
+# 信息命令
+info: ## 显示系统信息
+	@echo "$(BLUE)分布式验证码系统信息:$(NC)"
+	@echo "  配置文件: $(COMPOSE_FILE)"
+	@echo "  部署脚本: $(DEPLOY_SCRIPT)"
+	@echo "  测试脚本: $(TEST_SCRIPT)"
+	@echo "  工作节点: $(NODES)"
+	@echo "  环境: $(ENV)"
+	@echo "  模式: $(MODE)"
+	@echo ""
+	@echo "$(BLUE)访问地址:$(NC)"
+	@echo "  API网关:     http://localhost:8080"
+	@echo "  监控面板:     http://localhost:9090"
+	@echo "  Selenium Hub: http://localhost:4444"
+	@echo ""
+	@echo "$(BLUE)常用API:$(NC)"
+	@echo "  提交任务:     POST http://localhost:8080/submit_task"
+	@echo "  查询状态:     GET  http://localhost:8080/task_status/<id>"
+	@echo "  系统统计:     GET  http://localhost:8080/stats"
+	@echo "  健康检查:     GET  http://localhost:8080/health"
+
+quick-test: ## 快速功能测试
+	@echo "$(BLUE)执行快速功能测试...$(NC)"
+	@curl -s http://localhost:8080/health > /dev/null && echo "$(GREEN)✓ API网关正常$(NC)" || echo "$(RED)✗ API网关异常$(NC)"
+	@curl -s http://localhost:9090/health > /dev/null && echo "$(GREEN)✓ 监控服务正常$(NC)" || echo "$(RED)✗ 监控服务异常$(NC)"
+	@curl -s http://localhost:4444/status > /dev/null && echo "$(GREEN)✓ Selenium Hub正常$(NC)" || echo "$(RED)✗ Selenium Hub异常$(NC)"
+
+# 性能监控
+perf: ## 性能监控
+	@echo "$(BLUE)系统性能监控:$(NC)"
+	@echo "Docker容器状态:"
+	@docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}"
+	@echo ""
+	@echo "系统统计:"
+	@curl -s http://localhost:8080/stats | jq . 2>/dev/null || echo "无法获取系统统计"
+
+# 故障诊断
+diagnose: ## 故障诊断
+	@echo "$(BLUE)系统故障诊断:$(NC)"
+	@echo "1. 检查容器状态:"
+	@docker-compose -f $(COMPOSE_FILE) ps
+	@echo ""
+	@echo "2. 检查端口占用:"
+	@lsof -i :8080 2>/dev/null || echo "端口8080未被占用"
+	@lsof -i :9090 2>/dev/null || echo "端口9090未被占用"
+	@lsof -i :6379 2>/dev/null || echo "端口6379未被占用"
+	@lsof -i :4444 2>/dev/null || echo "端口4444未被占用"
+	@echo ""
+	@echo "3. 检查磁盘空间:"
+	@df -h
+	@echo ""
+	@echo "4. 检查内存使用:"
+	@free -h 2>/dev/null || vm_stat
+
+# 默认目标
+.DEFAULT_GOAL := help
