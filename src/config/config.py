@@ -128,6 +128,14 @@ class FileConfig:
     max_files: int = 100
 
 
+@dataclass
+class CrawlerConfig:
+    """爬虫配置"""
+    loop_count: int = 30  # 循环获取URL的次数
+    enable_fullscreen: bool = False  # 是否启用全屏模式
+    loop_interval: int = 0  # 循环间隔时间（秒）
+
+
 class Config:
     """主配置类"""
     
@@ -139,6 +147,7 @@ class Config:
         self.retry = RetryConfig()
         self.log = LogConfig()
         self.file = FileConfig()
+        self.crawler = CrawlerConfig()
         
         # 如果提供了配置文件，则加载
         if config_file and os.path.exists(config_file):
@@ -188,7 +197,8 @@ class Config:
                 'web': asdict(self.web),
                 'retry': asdict(self.retry),
                 'log': asdict(self.log),
-                'file': asdict(self.file)
+                'file': asdict(self.file),
+                'crawler': asdict(self.crawler)
             }
             
             with open(config_file, 'w', encoding='utf-8') as f:
@@ -219,6 +229,16 @@ class Config:
         self.retry.max_attempts = env_config['MAX_RETRY_ATTEMPTS']
         self.retry.wait_time = env_config['RETRY_WAIT_TIME']
         self.log.level = env_config['LOG_LEVEL']
+        
+        # 爬虫配置
+        if os.getenv('LOOP_COUNT'):
+            self.crawler.loop_count = int(os.getenv('LOOP_COUNT'))
+        
+        if os.getenv('ENABLE_FULLSCREEN'):
+            self.crawler.enable_fullscreen = os.getenv('ENABLE_FULLSCREEN').lower() == 'true'
+        
+        if os.getenv('LOOP_INTERVAL'):
+            self.crawler.loop_interval = int(os.getenv('LOOP_INTERVAL'))
 
 
 # 全局配置实例
@@ -226,6 +246,8 @@ config = Config()
 
 # 应用环境变量配置
 config.apply_env_config()
+
+
 
 
 # 便捷访问函数

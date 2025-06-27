@@ -11,6 +11,125 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+import urllib.parse
+import datetime
+
+def extract_queue_url(driver, logger=None):
+    """提取QueueIT参数并构建URL"""
+    try:
+        base_url = driver.driver.current_url
+        e = ''
+        q = ''
+        ts = ''
+        h = ''
+        
+        # 提取QueueIT参数
+        for cookie in driver.driver.get_cookies():
+            if 'QueueIT' in cookie['name']:
+                decoded_value = urllib.parse.unquote(cookie['value'])
+                params = decoded_value.split('&')
+                
+                for param in params:
+                    if '=' in param:
+                        key, value = param.split('=', 1)
+                        if key == 'EventId':
+                            e = value
+                        elif key == 'QueueId':
+                            q = value
+                        elif key == 'IssueTime':
+                            ts = value
+                        elif key == 'Hash':
+                            h = value
+        
+        # 构建最终URL
+        if e and q and ts and h:
+            f_url = base_url + "?queueittoken=e_{e}~q_{q}~ts_{ts}~ce_true~rt_queue~h_{h}".format(e=e, q=q, ts=ts, h=h)
+            return f_url
+        else:
+            return None
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"提取URL时出错: {e}")
+        else:
+            print(f"提取URL时出错: {e}")
+        return None
+
+def save_urls_to_file(urls, logger=None):
+    """将URL列表保存到txt文件"""
+    try:
+        # 创建文件名，包含时间戳
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"queue_urls_{timestamp}.txt"
+        
+        # 确保data目录存在
+        os.makedirs("data", exist_ok=True)
+        filepath = os.path.join("data", filename)
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(f"生成时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"总共获取到 {len(urls)} 个URL\n")
+            f.write("-" * 50 + "\n")
+            
+            for i, url in enumerate(urls, 1):
+                f.write(f"{i}. {url}\n")
+        
+        if logger:
+            logger.info(f"URL已保存到文件: {filepath}")
+        else:
+            print(f"URL已保存到文件: {filepath}")
+        return filepath
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"保存URL到文件时出错: {e}")
+        else:
+            print(f"保存URL到文件时出错: {e}")
+        return None
+
+def append_url_to_file(url, filepath, index, logger=None):
+    """将单个URL追加到文件"""
+    try:
+        with open(filepath, 'a', encoding='utf-8') as f:
+            f.write(f"{index}. {url}\n")
+        
+        if logger:
+            logger.info(f"URL已追加到文件: {url}")
+        return True
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"追加URL到文件时出错: {e}")
+        else:
+            print(f"追加URL到文件时出错: {e}")
+        return False
+
+def create_url_file(logger=None):
+    """创建URL文件并返回文件路径"""
+    try:
+        # 创建文件名，包含时间戳
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"queue_urls_{timestamp}.txt"
+        
+        # 确保data目录存在
+        os.makedirs("data", exist_ok=True)
+        filepath = os.path.join("data", filename)
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(f"生成时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"循环获取URL结果:\n")
+            f.write("-" * 50 + "\n")
+        
+        if logger:
+            logger.info(f"创建URL文件: {filepath}")
+        return filepath
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"创建URL文件时出错: {e}")
+        else:
+            print(f"创建URL文件时出错: {e}")
+        return None
 
 def main():
     """主函数"""
@@ -164,13 +283,83 @@ def main():
                     time.sleep(config.retry.wait_time)
                 else:
                     logger.error(f"已达到最大重试次数 ({config.retry.max_attempts})，程序终止")
+        
+        # 验证成功后，循环获取多个URL
+        if driver:
+            logger.info(f"开始循环获取多个URL，总共{config.crawler.loop_count}次...")
+            
+            # 创建URL文件
+            url_file_path = create_url_file(logger)
+            if not url_file_path:
+                logger.error("创建URL文件失败，程序终止")
+                return
+            
+            success_count = 0
+            
+            # 循环获取多个URL，每次都重新创建浏览器
+            for i in range(config.crawler.loop_count):
+                try:
+                    # 第一次使用现有的driver，后续创建新的
+                    current_driver = driver if i == 0 else None
+                    
+                    if i > 0:
+                        logger.info(f"第{i+1}次尝试：创建新的浏览器实例...")
+                        current_driver = BrowserDriver(headless=config.browser.headless)
+                        
+                        # 访问目标页面并重新进行验证流程
+                        current_driver.get_page(config.web.base_url)
+                        
+                        # 重新进行验证码识别和提交流程
+                        if process_captcha_and_submit(current_driver, ai):
+                            if check_success_page(current_driver):
+                                logger.info(f"第{i+1}次验证成功")
+                                # 根据配置决定是否全屏
+                                if config.crawler.enable_fullscreen:
+                                    current_driver.fullscreen()
+                            else:
+                                logger.warning(f"第{i+1}次验证失败")
+                                current_driver.close()
+                                continue
+                        else:
+                            logger.warning(f"第{i+1}次验证码处理失败")
+                            current_driver.close()
+                            continue
+                    
+                    # 获取URL
+                    url = extract_queue_url(current_driver, logger)
+                    if url:
+                        success_count += 1
+                        logger.info(f"第{i+1}次获取URL成功: {url}")
+                        # 立即将URL追加到文件
+                        append_url_to_file(url, url_file_path, success_count, logger)
+                    else:
+                        logger.warning(f"第{i+1}次获取URL失败")
+                    
+                    # 关闭当前浏览器实例
+                    if current_driver:
+                        logger.info(f"关闭第{i+1}次的浏览器实例")
+                        current_driver.close()
+                    
+                    # 根据配置决定是否等待
+                    if config.crawler.loop_interval > 0 and i < config.crawler.loop_count - 1:
+                        logger.info(f"等待{config.crawler.loop_interval}秒后进行第{i+2}次尝试...")
+                        time.sleep(config.crawler.loop_interval)
+                        
+                except Exception as e:
+                    logger.error(f"第{i+1}次获取URL时出错: {e}")
+                    if 'current_driver' in locals() and current_driver:
+                        current_driver.close()
+            
+            logger.info(f"循环完成，总共成功获取{success_count}个URL，已保存到文件: {url_file_path}")
+            
+            # 设置driver为None，避免在finally中重复关闭
+            driver = None
                     
     except Exception as e:
         logger.exception(f"执行过程中出现错误: {e}")
     finally:
         # 确保浏览器资源被释放
         if driver:
-            time.sleep(10)
             logger.info("正在关闭浏览器...")
             driver.close()
         
